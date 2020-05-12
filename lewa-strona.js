@@ -86,6 +86,7 @@ function getElementByNameTest(orderError) {
  */
 function getElByName(name) {
     let element = '';
+    let HTMLCollection;
     switch (name)
     {
         case 'clientData':
@@ -98,10 +99,11 @@ function getElByName(name) {
             element = document.querySelector('#sf_fieldset_informacje_dodatkowe_slide .clr');
             break;
         case 'recipientData':
-            element = getElByName('clientData').childElements()[1];
+            element = getElByName('clientData').children[1];
             break;
         case 'recipientAddressData':
-            element = getElByName('recipientData').childElements()[1].childElements();
+            HTMLCollection = getElByName('recipientData').children[1].children;
+            element = toArray(HTMLCollection);
             break;
         case 'recipientFullName':
             element = getElByName('recipientAddressData')[0].innerText;
@@ -115,7 +117,8 @@ function getElByName(name) {
             element = getElByName('recipientAddressData')[2].innerText;
             break;
         case 'products':
-            element = document.querySelector('#st_order-product-list tbody').childElements();
+            HTMLCollection = document.querySelector('#st_order-product-list tbody').children;
+            element = toArray(HTMLCollection);
             break;
         case 'containerElement':
             element = document.getElementById('container');
@@ -126,6 +129,12 @@ function getElByName(name) {
     }
 
     return element;
+}
+
+function toArray(object) {
+    let result = [];
+    Object.keys(object).forEach(key => result[key] = object[key]);
+    return result;
 }
 
 /**
@@ -176,7 +185,7 @@ function getParts(productParts) {
 function checkTapiocaError(parts, nameCell) {
     let error = '';
     if (parts['Tapioka'] !== 'Z tapioką' && parts['Ekstra tapioka'] !== 'Nie') {
-        productName = nameCell.childElements()[0].innerText;
+        productName = nameCell.children[0].innerText;
         error = `Uwaga! ${productName} jest "bez tapioki" ale zawiera "ekstra tapiokę" - błąd logiczny!<br>`;
     }
     return error;
@@ -213,7 +222,7 @@ function getSizeMessage(parts) {
 }
 
 function getQuantityMessage(product) {
-    let orderQuantity = product.childElements()[10].innerText;
+    let orderQuantity = product.children[10].innerText;
 
     return getRegMatch(/[\d]/, orderQuantity, 0);
 }
@@ -319,7 +328,7 @@ function getMixName(fullName) {
 }
 
 function getIngredientMessage(number, nameCell, parts, orderError) {
-    const orderName = nameCell.childElements()[0].innerText;
+    const orderName = nameCell.children[0].innerText;
     const mixName = getMixName(orderName);
     let ingredient = '';
 
@@ -414,8 +423,8 @@ function init()
 
     let products = getElByName('products');
     products.forEach(function (product, key) {
-        let nameCell = product.childElements()[3];
-        let productParts = nameCell.childElements()[1].childElements();
+        let nameCell = product.children[3];
+        let productParts = toArray(nameCell.children[1].children);
         let parts = getParts(productParts);
         let additions = getAdditionsMessage(parts);
 
